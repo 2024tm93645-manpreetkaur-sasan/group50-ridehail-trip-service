@@ -1,0 +1,9 @@
+services:
+  trip-service:
+    build: .
+    container_name: trip-service
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: always
