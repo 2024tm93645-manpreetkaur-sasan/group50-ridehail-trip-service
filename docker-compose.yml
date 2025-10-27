@@ -6,4 +6,25 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=tripdb
+    depends_on:
+      - postgres
     restart: always
+
+  postgres:
+    image: postgres:15
+    container_name: trip-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tripdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
