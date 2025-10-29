@@ -35,7 +35,6 @@ exports.acceptTrip = async (tripId) => {
     err.status = 404;
     throw err;
   }
-  // model.acceptTrip already throws "Trip not found" or "Trip cannot be accepted"
   return tripModel.acceptTrip(tripId);
 };
 
@@ -54,6 +53,5 @@ exports.cancelTrip = async (tripId, cancellation_fee = null) => {
     err.status = 404;
     throw err;
   }
-  // pass fee through if provided; model should validate fee if needed
   return tripModel.cancelTrip(tripId, cancellation_fee);
 };
