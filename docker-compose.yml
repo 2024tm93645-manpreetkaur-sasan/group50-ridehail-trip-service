@@ -4,12 +4,8 @@ services:
     container_name: trip-service
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DB_HOST=postgres
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=tripdb
+    env_file:
+      - .env
     depends_on:
       - postgres
     restart: always
@@ -18,9 +14,9 @@ services:
     image: postgres:15
     container_name: trip-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: tripdb
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
