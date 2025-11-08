@@ -55,3 +55,33 @@ exports.cancelTrip = async (tripId, cancellation_fee = null) => {
   }
   return tripModel.cancelTrip(tripId, cancellation_fee);
 };
+
+exports.calculateFare = async (distance_km) => {
+  if (!distance_km || isNaN(distance_km) || distance_km <= 0) {
+    const err = new Error("Invalid distance_km");
+    err.status = 400;
+    throw err;
+  }
+
+  const baseFare = 50;    
+  const perKmRate = 10;   
+  const currentHour = new Date().getHours();
+  let surgeMultiplier = 1.0;
+
+  if (currentHour >= 8 && currentHour < 10) {
+    surgeMultiplier = 1.5; 
+  } else if (currentHour >= 18 && currentHour < 21) {
+    surgeMultiplier = 1.2; 
+  }
+
+  const calculatedFare = (baseFare + perKmRate * distance_km) * surgeMultiplier;
+
+  return {
+    distance_km,
+    base_fare: baseFare,
+    per_km_rate: perKmRate,
+    surge_multiplier: surgeMultiplier,
+    calculated_fare: calculatedFare.toFixed(2),
+    currency: "INR",
+  };
+};

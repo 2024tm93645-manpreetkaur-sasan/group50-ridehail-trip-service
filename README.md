@@ -64,3 +64,18 @@ Base: http://localhost:3000/v1/trips
   - Description: Cancel trip; body may include cancellation_fee
     { "cancellation_fee": 10.5 }
   - Returns 200 with updated trip or appropriate 400/404
+
+- POST /v1/trips/calculate
+  - Description: Calculate the trip fare based on the provided trip distance (in kilometers). This endpoint performs a simple fare calculation using: A fixed base fare, A per kilometer rate, A dynamic surge multiplier depending on the time of day
+  - This endpoint does not store data in the database
+  - Body Parameters: distance_km
+  - Response example: {
+  "data": {
+    "distance_km": 12.5,
+    "base_fare": 50,
+    "per_km_rate": 10,
+    "surge_multiplier": 1.2,
+    "estimated_fare": "204.00",
+    "currency": "INR"
+  }
+}

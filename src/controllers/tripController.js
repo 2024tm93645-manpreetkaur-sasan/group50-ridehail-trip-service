@@ -99,3 +99,16 @@ exports.cancelTrip = async (req, res) => {
     }
   }
 };
+
+exports.calculateFare = async (req, res) => {
+  try {
+    const { distance_km } = req.body;
+    const fareDetails = await tripService.calculateFare(distance_km);
+
+    logger.logSuccess(`Calculated fare for ${distance_km} km`);
+    successResponse(res, fareDetails, "Fare calculated successfully");
+  } catch (error) {
+    logger.logError("Error calculating fare", error);
+    errorResponse(res, error.message || "Internal server error", error.status || 500);
+  }
+};
