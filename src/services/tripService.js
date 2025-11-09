@@ -19,14 +19,13 @@ exports.getTripById = async (id) => {
   return trip;
 };
 
-
-exports.createTrip = async (pickup_zone, drop_zone) => {
-  if (! pickup_zone || !drop_zone) {
-    const err = new Error("pickup_zone=" , pickup_zone ,"drop_zone=", drop_zone, " are required");
+exports.createTrip = async (rider_id, pickup_zone, drop_zone) => {
+  if ( !rider_id || ! pickup_zone || !drop_zone) {
+    const err = new Error("rider_id , pickup_zone=" , pickup_zone ,"drop_zone=", drop_zone, " are required");
     err.status = 400;
     throw err;
   }
-  return tripModel.createTrip(pickup_zone, drop_zone);
+  return tripModel.createTrip(rider_id,pickup_zone, drop_zone);
 };
 
 exports.acceptTrip = async (tripId) => {

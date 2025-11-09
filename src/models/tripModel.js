@@ -12,11 +12,11 @@ exports.getTripByID = async (tripId) => {
   return result.rows[0];
 };
 
-exports.createTrip = async (pickup_zone, drop_zone) => {
+exports.createTrip = async (rider_id,pickup_zone, drop_zone) => {
   const result = await pool.query(
-    `INSERT INTO trips (pickup_zone, drop_zone,  status, requested_at)
+    `INSERT INTO trips (rider_id, pickup_zone, drop_zone,  status, requested_at)
          VALUES ($1, $2,'REQUESTED', NOW()) RETURNING *;`,
-    [pickup_zone, drop_zone]
+    [rider_id, pickup_zone, drop_zone]
   );
   return result.rows[0];
 };

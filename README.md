@@ -79,3 +79,99 @@ Base: http://localhost:3000/v1/trips
     "currency": "INR"
   }
 }
+
+## PostgreSQL Setup Guide
+Docker & Docker Compose installed and .env should have necessary values
+  ## Start Postgres and Trip Service
+  docker compose up -d
+  ## Enter the Postgres Container
+  My db name is tripdb
+  docker exec -it trip-postgres psql -U postgres -d tripdb
+  ## Trip table schema
+  CREATE TABLE IF NOT EXISTS trips (
+  trip_id SERIAL PRIMARY KEY,
+  rider_id INT,
+  driver_id INT,
+  pickup_zone VARCHAR(255),
+  drop_zone VARCHAR(255),
+  status VARCHAR(50),
+  requested_at TIMESTAMP DEFAULT NOW(),
+  distance_km NUMERIC,
+  base_fare NUMERIC,
+  surge_multiplier NUMERIC,
+  total_fare NUMERIC
+);
+
+## -- Drivers Snapshot Table for testing
+CREATE TABLE IF NOT EXISTS drivers_snapshot (
+  driver_id SERIAL PRIMARY KEY,
+  name VARCHAR(100),
+  phone VARCHAR(20),
+  vehicle_type VARCHAR(50),
+  vehicle_plate VARCHAR(20),
+  is_active BOOLEAN
+);
+
+## Architecture
+```mermaid
+flowchart LR
+  subgraph TripService["Trip Service (Node.js + Express)"]
+    A1[POST /v1/trips/calculate]
+    A2[POST /v1/trips]
+    A3[GET /v1/trips/:id]
+    A4[GET /v1/trips]
+    A5[POST /v1/trips/:id/accept]
+    A6[POST /v1/trips/:id/complete]
+    A7[POST /v1/trips/:id/cancel]
+  end
+
+  subgraph PostgresDB["Postgres DB (tripdb)"]
+    T1[(TRIPS Table)]
+  end
+
+  TripService --> PostgresDB
+```
+
+## Entity Relationship Diagram
+```mermaid
+erDiagram
+    TRIPS {
+        string trip_id PK
+        string rider_id
+        string driver_id
+        string pickup_zone
+        string drop_zone
+        string status
+        timestamp requested_at
+        timestamp completed_at
+        float distance_km
+        float base_fare
+        float surge_multiplier
+        float total_fare
+    }
+```
+
+
+## Trip Workflow (Independent workflow not considering other microservices)
+```mermaid
+sequenceDiagram
+    participant Client as API Client
+    participant TripService as Trip Service (Express)
+    participant DB as Postgres (tripdb)
+
+    Client->>TripService: POST /v1/trips/calculate (pickup_zone, drop_zone)
+    TripService-->>Client: returns estimated fare (distance, surge, total)
+
+    Client->>TripService: POST /v1/trips (rider_id, pickup_zone, drop_zone)
+    TripService->>DB: INSERT trip (status='REQUESTED')
+    DB-->>TripService: trip created (trip_id)
+
+    Client->>TripService: POST /v1/trips/:id/accept
+    TripService->>DB: UPDATE TRIPS SET status='ACCEPTED'
+
+    Client->>TripService: POST /v1/trips/:id/complete
+    TripService->>DB: UPDATE TRIPS SET status='COMPLETED', total_fare=calculated
+
+    Client->>TripService: POST /v1/trips/:id/cancel
+    TripService->>DB: UPDATE TRIPS SET status='CANCELLED'
+```

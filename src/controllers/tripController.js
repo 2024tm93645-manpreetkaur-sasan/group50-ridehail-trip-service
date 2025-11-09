@@ -30,9 +30,9 @@ exports.getTripsByID = async (req, res) => {
 };
 
 exports.createTrip = async (req, res) => {
-  const { pickup_zone, drop_zone } = req.body || {};
+  const { rider_id, pickup_zone, drop_zone  } = req.body || {};
   try {
-    const newTrip = await tripService.createTrip(pickup_zone, drop_zone);
+    const newTrip = await tripService.createTrip(rider_id, pickup_zone, drop_zone);
     logger.logSuccess(`Created new trip with ID: ${newTrip.id}`);
     successResponse(res, newTrip, "Trip created successfully", 201);
   } catch (error) {
