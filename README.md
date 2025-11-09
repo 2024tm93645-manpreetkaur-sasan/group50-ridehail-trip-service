@@ -30,7 +30,7 @@ Base: http://localhost:3000/v1/trips
   - Description: List trips (returns empty array if none)
   - Response: 200 { "data": [ ... ] }
 
-- GET /v1/trips/:id
+- GET /v1/trips/:trip_id
 
   - Description: Get a single trip
   - Response:
@@ -50,17 +50,17 @@ Base: http://localhost:3000/v1/trips
     - 201 { "message": "Trip created successfully", "data": {...} }
     - 400 { "error": "rider_id, pickup_zone and drop_zone are required" }
 
-- POST /v1/trips/:id/accept
+- POST /v1/trips/:trip_id/accept
 
   - Description: Accept a trip (driver accepted)
   - Returns 200 with updated trip or appropriate 400/404
 
-- POST /v1/trips/:id/complete
+- POST /v1/trips/:trip_id/complete
 
   - Description: Mark trip completed
   - Returns 200 with updated trip or appropriate 400/404
 
-- POST /v1/trips/:id/cancel
+- POST /v1/trips/:trip_id/cancel
   - Description: Cancel trip; body may include cancellation_fee
     { "cancellation_fee": 10.5 }
   - Returns 200 with updated trip or appropriate 400/404
@@ -118,11 +118,11 @@ flowchart LR
   subgraph TripService["Trip Service (Node.js + Express)"]
     A1[POST /v1/trips/calculate]
     A2[POST /v1/trips]
-    A3[GET /v1/trips/:id]
+    A3[GET /v1/trips/:trip_id]
     A4[GET /v1/trips]
-    A5[POST /v1/trips/:id/accept]
-    A6[POST /v1/trips/:id/complete]
-    A7[POST /v1/trips/:id/cancel]
+    A5[POST /v1/trips/:trip_id/accept]
+    A6[POST /v1/trips/:trip_id/complete]
+    A7[POST /v1/trips/:trip_id/cancel]
   end
 
   subgraph PostgresDB["Postgres DB (tripdb)"]
@@ -166,12 +166,12 @@ sequenceDiagram
     TripService->>DB: INSERT trip (status='REQUESTED')
     DB-->>TripService: trip created (trip_id)
 
-    Client->>TripService: POST /v1/trips/:id/accept
+    Client->>TripService: POST /v1/trips/:trip_id/accept
     TripService->>DB: UPDATE TRIPS SET status='ACCEPTED'
 
-    Client->>TripService: POST /v1/trips/:id/complete
+    Client->>TripService: POST /v1/trips/:trip_id/complete
     TripService->>DB: UPDATE TRIPS SET status='COMPLETED', total_fare=calculated
 
-    Client->>TripService: POST /v1/trips/:id/cancel
+    Client->>TripService: POST /v1/trips/:trip_id/cancel
     TripService->>DB: UPDATE TRIPS SET status='CANCELLED'
 ```
