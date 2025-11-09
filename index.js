@@ -2,27 +2,54 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 
-let tripRoute;
-try {
-  tripRoute = require("./src/routes/tripRoute");
-} catch (e1) {
-  try {
-    tripRoute = require("./routes/tripRoute");
-  } catch (e2) {
-    console.error("Missing tripRoute: create src/routes/tripRoute.js or routes/tripRoute.js (module.exports = router)");
-    throw e2;
+const runSeed = require("./src/scripts/seedTrips");
+const pool = require("./src/config/db");
+const logger = require("./src/utils/logger");
+
+// Wait for Postgres to be ready
+async function waitForDB(retries = 20, delay = 2000) {
+  while (retries > 0) {
+    try {
+      await pool.query("SELECT NOW()");
+      logger.logInfo("PostgreSQL is ready");
+      return;
+    } catch (err) {
+      logger.logError(`⏳ Waiting for PostgreSQL... (${retries} retries left)`);
+      retries--;
+      await new Promise(res => setTimeout(res, delay));
+    }
   }
+  throw new Error("PostgreSQL did not become ready in time");
 }
 
-const port = process.env.PORT || 3000;
-app.use(express.json());
+(async () => {
+  try {
+    // 1. Wait for DB to be ready
+    await waitForDB();
 
-app.use("/v1/trips", tripRoute);
+    // 2. Seed data
+    await runSeed();
 
-app.get("/", (req, res) => {
-  res.send("Trip Service is running");
-});
+    // 3. Start middlewares
+    app.use(express.json());
+    const { correlationMiddleware } = require("./src/middleware/correlation");
+    app.use(correlationMiddleware);
 
-app.listen(port, () => {
-  console.log(`Trip Service running on http://localhost:${port}`);
-});
+    // 4. Routes
+    const tripRoute = require("./src/routes/tripRoute");
+    app.use("/v1/trips", tripRoute);
+
+    // 5. Health check
+    app.get("/", (req, res) => res.send("Trip Service running"));
+
+    // 6. Start server
+    const PORT = process.env.PORT || 9082;
+    app.listen(PORT, () => {
+      logger.logInfo(`Trip Service running on port ${PORT}`);
+    });
+
+  } catch (err) {
+    logger.logError("Startup failed:", err);
+    process.exit(1);
+  }
+})();

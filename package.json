@@ -4,7 +4,9 @@
   "description": "Manages trip requests, driver assignment, status updates, and trip completion",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "node src/scripts/seedTrips.js",
+    "start-with-seed": "node src/scripts/seedTrips.js && node src/server.js"
   },
   "repository": {
     "type": "git",
@@ -20,8 +22,10 @@
   "homepage": "https://github.com/2024tm93645-manpreetkaur-sasan/group50-ridehail-trip-service#readme",
   "dependencies": {
     "axios": "^1.13.2",
+    "csv-parse": "^6.1.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "uuid": "^13.0.0"
   }
 }
