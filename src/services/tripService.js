@@ -67,8 +67,31 @@ exports.cancelTrip = async (tripId) => {
     err.status = 404;
     throw err;
   }
+
+  const trip = await tripModel.getTripByID(tripId);
+
+  if (!trip) {
+    const err = new Error("Trip not found");
+    err.status = 404;
+    throw err;
+  }
+
+  // Not allowed: ongoing or completed trips
+  if (["ONGOING", "COMPLETED"].includes(trip.status)) {
+    const err = new Error("Trip cannot be cancelled");
+    err.status = 400;
+    throw err;
+  }
+
+  // Already cancelled
+  if (trip.status === "CANCELLED") {
+    return trip; // No-op
+  }
+
+  // Allowed: REQUESTED or ACCEPTED
   return tripModel.cancelTrip(tripId);
 };
+
 
 exports.calculateFare = async (distance_km) => {
   const baseFare = 50;
@@ -105,7 +128,7 @@ exports.calculateFare = async (distance_km) => {
 };
 
 
-exports.completeTripAndCharge = async (tripId, distance_km) => {
+exports.completeTripAndCharge = async (tripId, distance_km, method = "CASH") => {
   const trip = await tripModel.completeTrip(tripId);
   const fareDetails = await exports.calculateFare(distance_km);
 
@@ -115,22 +138,14 @@ exports.completeTripAndCharge = async (tripId, distance_km) => {
       {
         trip_id: trip.trip_id,
         amount: fareDetails.calculated_fare,
-        method: "CASH"
+        method,
+        status: trip.status
       }
     );
 
-    return {
-      trip,
-      payment: paymentRes.data,
-      fare: fareDetails
-    };
+    return { trip, payment: paymentRes.data, fare: fareDetails };
 
   } catch (err) {
-    console.error(`Payment failed for trip ${tripId}:`, err.message);
-    return {
-      trip,
-      fare: fareDetails,
-      payment_error: err.response?.data || err.message
-    };
+    return { trip, fare: fareDetails, payment_error: err.message };
   }
 };

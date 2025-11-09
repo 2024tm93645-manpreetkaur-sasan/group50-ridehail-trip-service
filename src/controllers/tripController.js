@@ -64,20 +64,20 @@ exports.acceptTrip = async (req, res) => {
 
 exports.completeTrip = async (req, res) => {
   const tripId = parseInt(req.params.trip_id);
-  const { distance_km } = req.body || {};
+  const { distance_km, method = "CASH" } = req.body;
+
   if (!distance_km || isNaN(distance_km) || distance_km <= 0) {
     return errorResponse(res, "Valid distance_km is required", 400);
   }
 
   try {
-    const result = await tripService.completeTripAndCharge(tripId, distance_km);
-    logger.logSuccess(`Trip ${tripId} completed and payment processed`);
+    const result = await tripService.completeTripAndCharge(tripId, distance_km, method);
     successResponse(res, result, "Trip completed and payment processed");
   } catch (err) {
-    logger.logError(`Error completing trip ${tripId}`, err);
-    errorResponse(res, err.message || "Internal server error", err.status || 500);
+    errorResponse(res, err.message || "Internal server error");
   }
 };
+
 
 exports.cancelTrip = async (req, res) => {
   const tripId = parseInt(req.params.trip_id);
