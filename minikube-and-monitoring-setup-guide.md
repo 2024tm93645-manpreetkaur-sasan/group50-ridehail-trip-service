@@ -7,6 +7,7 @@ This guide explains how to:
 3. Deploy Trip DB, Trip Service, Prometheus, and Grafana
 4. Import Grafana Dashboard
 5. Enable Kubernetes Dashboard (visual UI)
+6. **Use LoadBalancer services via `minikube tunnel`**
 
 It is intentionally minimal and easy to follow.
 
@@ -55,7 +56,7 @@ minikube image load trip-db:latest
 
 ---
 
-# ✅ **3. Apply All Kubernetes Manifests**
+# **3. Apply All Kubernetes Manifests**
 
 ```bash
 kubectl apply -f k8s/
@@ -88,7 +89,7 @@ List all services:
 kubectl get svc
 ```
 
-Port-forward Trip Service (for Postman):
+Port-forward Trip Service (optional fallback):
 
 ```bash
 kubectl port-forward svc/trip-service 9082:9082
@@ -96,7 +97,47 @@ kubectl port-forward svc/trip-service 9082:9082
 
 ---
 
-# **5. Port-Forward Prometheus**
+# **Using LoadBalancer Services in Minikube**
+
+Your manifests use **LoadBalancer** instead of **NodePort**, so Minikube requires a tunnel to expose them properly.
+
+### **Start Minikube Tunnel**
+
+In a separate terminal:
+
+```bash
+minikube tunnel
+```
+
+This:
+
+* Allocates external IPs for all LoadBalancer services
+* Lets you access Trip Service, Prometheus, Grafana using assigned IPs
+* Requires sudo on some machines
+
+Check services again:
+
+```bash
+kubectl get svc
+```
+
+You will now see an **EXTERNAL-IP** assigned.
+
+Example:
+
+```
+trip-service    LoadBalancer   10.0.0.123   192.168.49.2   9082:0/TCP   1m
+```
+
+Access your service at:
+
+```
+http://EXTERNAL-IP:9082
+```
+
+---
+
+# **5. Port-Forward Prometheus (Optional)**
 
 Prometheus → [http://localhost:9090](http://localhost:9090)
 
@@ -106,7 +147,7 @@ kubectl port-forward svc/prometheus 9090:9090
 
 ---
 
-# ✅ **6. Port-Forward Grafana**
+# **6. Port-Forward Grafana (Optional)**
 
 Grafana → [http://localhost:3000](http://localhost:3000)
 
@@ -122,7 +163,7 @@ admin / admin
 
 ---
 
-# 📊 **Grafana Dashboard Import Instructions**
+# **Grafana Dashboard Import Instructions**
 
 ## **1. Open Grafana**
 
@@ -132,7 +173,7 @@ Visit:
 http://localhost:3000
 ```
 
-Login with `admin/admin`.
+(or use the LoadBalancer external IP if preferred)
 
 ---
 
@@ -164,7 +205,7 @@ You will now see:
 
 ---
 
-# 🚀 **7. Enable Kubernetes Dashboard (Optional)**
+# **7. Enable Kubernetes Dashboard (Optional)**
 
 Enable dashboard add-on:
 
@@ -198,5 +239,4 @@ This gives you a GUI to see:
 * Resource Usage
 * Deployments
 * Services
-
 

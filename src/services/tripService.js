@@ -31,7 +31,7 @@ exports.createAndAssignDriver = async (rider_id, pickup_zone, drop_zone) => {
 
   // Fetch active drivers
   const driverRes = await http.get(`${DRIVER_SERVICE_URL}/v1/drivers`);
-  const activeDriver = driverRes.data.find(d => d.isActive);
+  const activeDriver = driverRes.data.find(d => d.is_active);
 
   if (!activeDriver) {
     const err = new Error("No active drivers available");
@@ -40,9 +40,10 @@ exports.createAndAssignDriver = async (rider_id, pickup_zone, drop_zone) => {
   }
 
   // Mark driver inactive (busy)
-  await http.patch(
-    `${DRIVER_SERVICE_URL}/v1/drivers/${activeDriver.driver_id}/status?active=false`
-  );
+  http.patch(`${DRIVER_SERVICE_URL}/v1/drivers/${activeDriver.driver_id}/status`, {
+    is_active: false
+  });
+
 
   // Assign driver to trip
   await tripModel.assignDriver(trip.trip_id, activeDriver.driver_id);
@@ -152,9 +153,9 @@ exports.completeTripAndCharge = async (tripId, distance_km, method = "CASH") => 
         status: trip.status
       }
     );
-  metrics.payments_success_total++;
-  metrics.logMetrics();
-  prometheus.paymentsSuccess.inc();
+   metrics.payments_success_total++;
+   metrics.logMetrics();
+   prometheus.paymentsSuccess.inc();
     return { trip, payment: paymentRes.data, fare: fareDetails };
 
   } catch (err) {

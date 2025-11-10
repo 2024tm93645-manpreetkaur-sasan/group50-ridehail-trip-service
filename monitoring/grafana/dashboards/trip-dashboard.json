@@ -13,7 +13,7 @@
       "id": 1,
       "datasource": {
         "type": "prometheus",
-        "uid": "-100"
+        "uid": null
       },
       "targets": [
         {
@@ -28,7 +28,7 @@
       "id": 2,
       "datasource": {
         "type": "prometheus",
-        "uid": "-100"
+        "uid": null
       },
       "targets": [
         {
@@ -43,7 +43,7 @@
       "id": 3,
       "datasource": {
         "type": "prometheus",
-        "uid": "-100"
+        "uid": null
       },
       "targets": [
         {
@@ -58,7 +58,7 @@
       "id": 4,
       "datasource": {
         "type": "prometheus",
-        "uid": "-100"
+        "uid": null
       },
       "targets": [
         {
@@ -73,7 +73,7 @@
       "id": 5,
       "datasource": {
         "type": "prometheus",
-        "uid": "-100"
+        "uid": null
       },
       "targets": [
         {
