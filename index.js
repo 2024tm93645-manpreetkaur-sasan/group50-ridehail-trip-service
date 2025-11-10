@@ -5,6 +5,14 @@ const app = express();
 const runSeed = require("./src/scripts/seedTrips");
 const pool = require("./src/config/db");
 const logger = require("./src/utils/logger");
+const prometheus = require("./src/utils/prometheus");
+
+// Prometheus endpoint
+app.get("/metrics", async (req, res) => {
+  res.setHeader("Content-Type", prometheus.register.contentType);
+  res.send(await prometheus.register.metrics());
+});
+
 
 // Wait for Postgres to be ready
 async function waitForDB(retries = 20, delay = 2000) {
@@ -40,7 +48,7 @@ async function waitForDB(retries = 20, delay = 2000) {
     app.use("/v1/trips", tripRoute);
 
     // 5. Health check
-    app.get("/", (req, res) => res.send("Trip Service running"));
+    app.get("/health", (req, res) => res.send("Trip Service running"));
 
     // 6. Start server
     const PORT = process.env.PORT || 9082;

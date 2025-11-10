@@ -1,6 +1,7 @@
 const tripModel = require("../models/tripModel");
-const axios = require("axios");
-
+const http = require("../utils/http");
+const metrics = require("../utils/metrics");
+const prometheus = require("../utils/prometheus");
 const DRIVER_SERVICE_URL = process.env.DRIVER_SERVICE_URL;
 const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL;
 
@@ -29,7 +30,7 @@ exports.createAndAssignDriver = async (rider_id, pickup_zone, drop_zone) => {
   const trip = await tripModel.createTrip(rider_id, pickup_zone, drop_zone);
 
   // Fetch active drivers
-  const driverRes = await axios.get(`${DRIVER_SERVICE_URL}/api/v1/drivers`);
+  const driverRes = await http.get(`${DRIVER_SERVICE_URL}/v1/drivers`);
   const activeDriver = driverRes.data.find(d => d.isActive);
 
   if (!activeDriver) {
@@ -39,8 +40,8 @@ exports.createAndAssignDriver = async (rider_id, pickup_zone, drop_zone) => {
   }
 
   // Mark driver inactive (busy)
-  await axios.patch(
-    `${DRIVER_SERVICE_URL}/api/v1/drivers/${activeDriver.driver_id}/status?active=false`
+  await http.patch(
+    `${DRIVER_SERVICE_URL}/v1/drivers/${activeDriver.driver_id}/status?active=false`
   );
 
   // Assign driver to trip
@@ -48,6 +49,10 @@ exports.createAndAssignDriver = async (rider_id, pickup_zone, drop_zone) => {
 
   // Auto-accept trip
   const acceptedTrip = await tripModel.acceptTrip(trip.trip_id);
+
+  metrics.trips_created_total++;
+  metrics.logMetrics();
+  prometheus.tripsCreated.inc();
 
   return acceptedTrip;
 };
@@ -87,6 +92,10 @@ exports.cancelTrip = async (tripId) => {
   if (trip.status === "CANCELLED") {
     return trip; // No-op
   }
+
+   metrics.trips_cancelled_total++;
+   metrics.logMetrics();
+   prometheus.tripsCancelled.inc();
 
   // Allowed: REQUESTED or ACCEPTED
   return tripModel.cancelTrip(tripId);
@@ -130,10 +139,11 @@ exports.calculateFare = async (distance_km) => {
 
 exports.completeTripAndCharge = async (tripId, distance_km, method = "CASH") => {
   const trip = await tripModel.completeTrip(tripId);
+  metrics.trips_completed_total++;
   const fareDetails = await exports.calculateFare(distance_km);
 
   try {
-    const paymentRes = await axios.post(
+    const paymentRes = await http.post(
       `${PAYMENT_SERVICE_URL}/v1/payments/charge`,
       {
         trip_id: trip.trip_id,
@@ -142,10 +152,57 @@ exports.completeTripAndCharge = async (tripId, distance_km, method = "CASH") => 
         status: trip.status
       }
     );
-
+  metrics.payments_success_total++;
+  metrics.logMetrics();
+  prometheus.paymentsSuccess.inc();
     return { trip, payment: paymentRes.data, fare: fareDetails };
 
   } catch (err) {
+    metrics.payments_failed_total++;
+    metrics.logMetrics();
+    prometheus.paymentsFailed.inc();
     return { trip, fare: fareDetails, payment_error: err.message };
   }
 };
+
+
+exports.refundTrip = async (tripId) => {
+  const trip = await tripModel.getTripByID(tripId);
+
+  if (!trip) {
+    const err = new Error("Trip not found");
+    err.status = 404;
+    throw err;
+  }
+
+  if (trip.status !== "COMPLETED") {
+    const err = new Error("Only completed trips can be refunded");
+    err.status = 400;
+    throw err;
+  }
+
+  //  Fetch payment info from PaymentService
+  const paymentRes = await http.get(
+    `${PAYMENT_SERVICE_URL}/v1/payments/trip/${tripId}`
+  );
+
+  if (!paymentRes.data || paymentRes.data.status !== "SUCCESS") {
+    const err = new Error("No successful payment found");
+    err.status = 404;
+    throw err;
+  }
+
+  const paymentId = paymentRes.data.payment_id;
+
+  // Call refund API
+  const refundRes = await http.patch(
+    `${PAYMENT_SERVICE_URL}/v1/payments/${paymentId}/refund`
+  );
+
+  return {
+    trip_id: tripId,
+    refund: refundRes.data
+  };
+};
+
+

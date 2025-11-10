@@ -111,3 +111,17 @@ exports.calculateFare = async (req, res) => {
     errorResponse(res, error.message || "Internal server error", error.status || 500);
   }
 };
+
+
+
+exports.refundTrip = async (req, res) => {
+  const tripId = parseInt(req.params.trip_id);
+
+  try {
+    const result = await tripService.refundTrip(tripId);
+    successResponse(res, result, "Trip refunded successfully");
+  } catch (err) {
+    errorResponse(res, err.message, err.status || 500);
+  }
+};
+
