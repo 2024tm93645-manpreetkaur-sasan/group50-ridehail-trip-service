@@ -1,0 +1,159 @@
+{
+  "info": {
+    "name": "Trip Service API",
+    "_postman_id": "trip-service-collection-001",
+    "description": "Postman collection for Trip Service endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Trips",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Correlation-ID",
+            "value": "test-123"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/trips",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "trips"]
+        }
+      }
+    },
+    {
+      "name": "Get Trip By ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-Correlation-ID",
+            "value": "test-123"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/trips/1",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "trips", "1"]
+        }
+      }
+    },
+    {
+      "name": "Create Trip",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Correlation-ID",
+            "value": "test-123"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rider_id\": 10,\n  \"pickup_zone\": \"Marathahalli\",\n  \"drop_zone\": \"BTM\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/trips",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "trips"]
+        }
+      }
+    },
+    {
+      "name": "Accept Trip",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "X-Correlation-ID",
+            "value": "test-123"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/trips/1/accept",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "trips", "1", "accept"]
+        }
+      }
+    },
+    {
+      "name": "Complete Trip",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Correlation-ID",
+            "value": "test-123"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"distance_km\": 12.5\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/trips/1/complete",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "trips", "1", "complete"]
+        }
+      }
+    },
+    {
+      "name": "Cancel Trip",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "X-Correlation-ID",
+            "value": "test-123"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/v1/trips/1/cancel",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "trips", "1", "cancel"]
+        }
+      }
+    },
+    {
+      "name": "Calculate Fare",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Correlation-ID",
+            "value": "test-123"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"distance_km\": 15\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/trips/calculate",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "trips", "calculate"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:9082"
+    }
+  ]
+}

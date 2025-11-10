@@ -1,0 +1,86 @@
+{
+  "id": null,
+  "title": "Trip Service Dashboard",
+  "tags": ["trip-service"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Trips Created",
+      "id": 1,
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "targets": [
+        {
+          "expr": "trips_created_total"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "Trips Completed",
+      "id": 2,
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "targets": [
+        {
+          "expr": "trips_completed_total"
+        }
+      ],
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "Trips Cancelled",
+      "id": 3,
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "targets": [
+        {
+          "expr": "trips_cancelled_total"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "Payments Success",
+      "id": 4,
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "targets": [
+        {
+          "expr": "payments_success_total"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 4, "w": 6, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "Payments Failed",
+      "id": 5,
+      "datasource": {
+        "type": "prometheus",
+        "uid": null
+      },
+      "targets": [
+        {
+          "expr": "payments_failed_total"
+        }
+      ],
+      "gridPos": { "x": 6, "y": 4, "w": 6, "h": 4 }
+    }
+  ]
+}
